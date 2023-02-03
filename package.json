@@ -1,0 +1,22 @@
+{
+  "name": "jsdieta",
+  "version": "1.0.0",
+  "description": "",
+  "main": ".eslintrc.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Honeybadger991/FirstJS.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Honeybadger991/FirstJS/issues"
+  },
+  "homepage": "https://github.com/Honeybadger991/FirstJS#readme",
+  "devDependencies": {
+    "json-server": "^0.17.1"
+  }
+}

@@ -17,9 +17,9 @@ window.addEventListener('DOMContentLoaded', () =>{
     }
 
     function showTabsContent(i = 0){
-            tabsContent[i].classList.remove('hide');
-            tabsContent[i].classList.add('show', 'fade');
-            tabs[i].classList.add('tabheader__item_active');
+        tabsContent[i].classList.remove('hide');
+        tabsContent[i].classList.add('show', 'fade');
+        tabs[i].classList.add('tabheader__item_active');
     }
 
     hideTabsContent()
@@ -37,6 +37,68 @@ window.addEventListener('DOMContentLoaded', () =>{
             })
         }
     })
+
+    //slider///////////////////////////////////////////////////////////////////////////////////////////////////
+
+    const sliderParent = document.querySelector('.offer__slider-counter'),
+          sliderPrev = sliderParent.querySelector('.offer__slider-prev'),
+          sliderNext = sliderParent.querySelector('.offer__slider-next'),
+          slideCurrentNumber = sliderParent.querySelector('#current'),
+          slideTotalNumber = sliderParent.querySelector('#total'),
+          slideContent = document.querySelectorAll('.offer__slide');
+
+
+    let num = 0;
+    
+    sliderParent.addEventListener('click', event =>{
+        const target = event.target;
+        if (target && target == sliderNext){
+            if(num >= slideContent.length - 1){
+                num = -1;
+            }
+            num++;
+        }
+        if (target && target == sliderPrev){
+            if(num <= 0){
+                num = slideContent.length;
+            }
+            num--;
+        }
+        detectSlideCurrentNumber(num);
+        detectSlideTotalNumber();
+        showSlideContent(num);
+    });
+
+    function detectSlideTotalNumber (){
+        const leng = slideContent.length;
+        if (leng <= 9){
+            slideTotalNumber.textContent = `0${leng}`;
+        } else slideTotalNumber.textContent = `${leng}`;
+    };
+
+
+    function detectSlideCurrentNumber (i){
+        if (i <= 8){
+            slideCurrentNumber.textContent = `0${i + 1}`
+        }
+        else slideCurrentNumber.textContent = `${i + 1}`;
+    };
+
+
+    function showSlideContent(i){
+        slideContent.forEach(item =>{
+            item.classList.add('hide');
+            item.classList.remove('show');
+        });
+        slideContent[i].classList.remove('hide');
+        slideContent[i].classList.add('show');
+    };
+
+
+    detectSlideCurrentNumber(num);
+    detectSlideTotalNumber();
+    showSlideContent(num);
+
 
     //timer///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -99,7 +161,7 @@ window.addEventListener('DOMContentLoaded', () =>{
     //class-cards///////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    class Card {
+    class MenuCard {
         constructor(imgSrc, imgAlt, subtitle, descr, price, parentSelector, ...classes){
             this.imgSrc = imgSrc;
             this.imgAlt = imgAlt;
@@ -116,7 +178,7 @@ window.addEventListener('DOMContentLoaded', () =>{
             this.price = this.price * this.transfer;
         }
 
-        placeCard(){
+        placeMenuCard(){
             const div = document.createElement('div');
 
             if (this.classes.length === 0){
@@ -139,42 +201,31 @@ window.addEventListener('DOMContentLoaded', () =>{
             `;
             this.parent.append(div);
         }
-    }
+    };
 
-    const test = new Card(
-        'img/tabs/vegy.jpg',
-        'vegy', 
-        'Меню "Фитнес"',
-        'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!', 
-        9, 
-        '.menu__field .container',
-        'menu__item'
-        );
-    test.placeCard();
+    const getResource = async (url) =>{
+        const res = await fetch(url);
 
-    const test2 = new Card(
-        'img/tabs/elite.jpg',
-        'elite', 
-        'Меню “Премиум”',
-        'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!', 
-        9, 
-        '.menu__field .container',
-        'menu__item'
-        );
+        if(!res.ok){
+            throw new Error(`could not fetch ${url}, status: ${res.status}`)
+        }
 
-    test2.placeCard();
+        return await res.json();
+    };
 
-    const test3 = new Card(
-        'img/tabs/post.jpg',
-        'post', 
-        'Меню "Постное"',
-        'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.', 
-        9, 
-        '.menu__field .container',
-        'menu__item'
-        );
-    test3.placeCard();
+    // getResource('http://localhost:3000/menu')
+    //     .then(data => {
+    //         data.forEach(({img, altimg, title, descr, price}) =>{
+    //             new MenuCard(img, altimg, title, descr, price, '.menu__field .container').placeMenuCard();
+    //         });
+    //     });
 
+    axios.get('http://localhost:3000/menu')
+        .then(data => {
+        data.data.forEach(({img, altimg, title, descr, price}) =>{
+            new MenuCard(img, altimg, title, descr, price, '.menu__field .container').placeMenuCard();
+            });
+        });
 
     //form///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -187,10 +238,23 @@ window.addEventListener('DOMContentLoaded', () =>{
     }
 
     forms.forEach(item =>{
-        postForm(item);
+        bindPostData(item);
     })
 
-    function postForm (form){
+    const postData = async (url, data) =>{
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json'
+            },
+            body: data
+        });
+
+        return await res.json();
+    }
+
+
+    function bindPostData (form){
         form.addEventListener('submit', (e) =>{
             e.preventDefault();
 
@@ -201,25 +265,22 @@ window.addEventListener('DOMContentLoaded', () =>{
             display: block;
             margin: 0 auto;
         `;
-        form.insertAdjacentElement('afterend', statusMassage)
-
-
-        const request = new XMLHttpRequest();
-        request.open('POST', 'server.php');
+        form.insertAdjacentElement('afterend', statusMassage);
 
         const formData = new FormData(form);
-        request.send(formData);
 
-        request.addEventListener('load', () =>{
-            if (request.status === 200){
-                showThanksModal(massages.success);
-                console.log(request.response);
-                form.reset();
-                statusMassage.remove();
-            } else{
-                showThanksModal(massages.fail);
-            };
-        })
+        const json = JSON.stringify(Object.fromEntries(formData.entries()));
+
+        postData('http://localhost:3000/requests', json)
+        .then(data =>{
+            console.log(data);
+            showThanksModal(massages.success);
+            statusMassage.remove();
+        }).catch(() =>{
+            showThanksModal(massages.fail);
+        }).finally(() =>{
+            form.reset();
+        });
         })
     }
 
@@ -299,4 +360,7 @@ window.addEventListener('DOMContentLoaded', () =>{
         }, 4000);
     }
     
+    // fetch('http://localhost:3000/menu')
+    //     .then(data => data.json())
+    //     .then(res => console.log (res))
 })
